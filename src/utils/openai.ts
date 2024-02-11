@@ -13,6 +13,25 @@ export type TokenWithLogProbs = {
   probs: Record<string, number>;
 };
 
+// shifts control and whitespace characters back to their original characters
+// source: https://github.com/openai/gpt-2/issues/80#issuecomment-487202159
+function cleanToken(token: string) {
+  return token
+    .split("")
+    .map((c) => {
+      const charCode = c.charCodeAt(0);
+      switch (charCode) {
+        case 265: // ĉ
+        case 266: // Ġ
+        case 288: // Ġ
+          return String.fromCharCode(charCode - 256);
+        default:
+          return c;
+      }
+    })
+    .join("");
+}
+
 export async function getLogProbs(code: string): Promise<TokenWithLogProbs[]> {
   const response = await client.completions.create({
     model: "deepseek-ai/deepseek-coder-7b-base-v1.5",
@@ -39,7 +58,7 @@ export async function getLogProbs(code: string): Promise<TokenWithLogProbs[]> {
 
     const probs: Record<string, number> = {};
     Object.entries(logprobs[i]!).forEach(([token, logprob]) => {
-      probs[token] = logprob;
+      probs[cleanToken(token)] = logprob;
     });
 
     result.push({ token, from, to, probs });

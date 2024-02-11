@@ -36,16 +36,21 @@ function App() {
 
           const logprobs = await getLogProbs(code);
 
-          const effects: StateEffect<Highlight>[] = logprobs.map((logprob) => {
+          const effects: StateEffect<Highlight>[] = [];
+
+          for (const logprob of logprobs) {
             const { token, from, to, probs } = logprob;
 
-            const selectedProbEntry = Object.entries(probs)[0];
-            let maxProbEntry = selectedProbEntry;
-            for (const curr of Object.entries(probs)) {
-              if (curr[1] > maxProbEntry[1]) {
-                maxProbEntry = curr;
-              }
+            if (probs[token] === undefined) {
+              console.error(`Missing logprob for ${token}`);
+              return;
             }
+
+            const probsArr = Object.entries(probs);
+            probsArr.sort(([, probA], [, probB]) => probB - probA);
+
+            const selectedProbEntry = [token, probs[token]] as const;
+            const maxProbEntry = probsArr[0]!;
 
             const selectedProb = Math.exp(selectedProbEntry[1]);
             const maxProb = Math.exp(maxProbEntry[1]);
@@ -53,14 +58,16 @@ function App() {
 
             console.log(token, selectedProb, maxProb, maxProb - selectedProb);
 
-            return highlightEffect.of({
-              from,
-              to,
-              style: `background-color: hsl(${hue} 100% 50% / ${
-                maxProb - selectedProb
-              })`,
-            });
-          });
+            effects.push(
+              highlightEffect.of({
+                from,
+                to,
+                style: `background-color: hsl(${hue} 100% 50% / ${
+                  maxProb - selectedProb
+                })`,
+              })
+            );
+          }
 
           refs.current.view?.dispatch({ effects });
 

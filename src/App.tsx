@@ -1,20 +1,28 @@
 import { useRef, useState } from "react";
 
 import { javascript } from "@codemirror/lang-javascript";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { Compartment } from "@uiw/react-codemirror";
 import type { ReactCodeMirrorRef, StateEffect } from "@uiw/react-codemirror";
 
-import { highlightEffect, highlightField } from "./extensions/highlighter";
+import { LanguageSelect } from "./components/language-select";
+import type { Language } from "./components/language-select";
 import { astField, updateASTEffect } from "./extensions/ast";
-import type { Highlight } from "./extensions/highlighter";
+import { highlightEffect, highlightField } from "./extensions/highlighter";
 import { dilloTooltip } from "./extensions/tooltip";
 import { getASTNodeProbs, getASTNodes } from "./utils/ast";
-import type { ASTNodeWithProbs } from "./utils/ast";
+import type { ASTNode } from "./utils/ast";
 import { getLogProbs } from "./utils/openai";
+
+const languageConf = new Compartment();
 
 const initialCode = `function add(num1: number, num2: number) {
   return num1 + num2;
 }`;
+
+const languages: Language[] = [
+  { id: "none", name: "None" },
+  { id: "typescript", name: "Typescript" },
+];
 
 function App() {
   const [code, setCode] = useState(initialCode);
@@ -26,6 +34,31 @@ function App() {
     <div className="w-full min-h-screen flex flex-col">
       <div className="flex gap-2 items-center justify-between p-2 border-b flex-wrap">
         <h2 className="font-bold">Dillo</h2>
+        <LanguageSelect
+          languages={languages}
+          onLanguageChange={(language: Language) => {
+            if (!refs.current.view) {
+              return;
+            }
+
+            let languageEffect: StateEffect<unknown>;
+
+            switch (language.id) {
+              case "typescript": {
+                languageEffect = languageConf.reconfigure(
+                  javascript({ typescript: true })
+                );
+                break;
+              }
+              default: {
+                languageEffect = languageConf.reconfigure([]);
+                break;
+              }
+            }
+
+            refs.current.view.dispatch({ effects: [languageEffect] });
+          }}
+        />
         <button
           className="bg-black text-white px-4 py-2 rounded-md text-sm"
           disabled={isLoading}
@@ -45,11 +78,20 @@ function App() {
               return;
             }
 
-            const nodes = getASTNodes(refs.current.view.state);
+            const effects: StateEffect<unknown>[] = [];
+
+            const languageExtension = languageConf.get(refs.current.view.state);
+            const languageExtensionLoaded =
+              languageExtension &&
+              (!Array.isArray(languageExtension) ||
+                languageExtension.length > 0);
+
+            const nodes: ASTNode[] = languageExtensionLoaded
+              ? getASTNodes(refs.current.view.state)
+              : logprobs.map(({ from, to }) => ({ from, to, name: "Token" }));
             const astNodeProbs = getASTNodeProbs(code, nodes, logprobs);
-            const effects: StateEffect<Highlight | ASTNodeWithProbs[]>[] = [
-              updateASTEffect.of(astNodeProbs),
-            ];
+
+            effects.push(updateASTEffect.of(astNodeProbs));
 
             for (const astNodeProb of astNodeProbs) {
               const { node, prob, possible } = astNodeProb;
@@ -88,7 +130,7 @@ function App() {
           astField,
           highlightField,
           dilloTooltip(),
-          javascript({ typescript: true }),
+          languageConf.of([]),
         ]}
         onChange={(value) => {
           setCode(value);

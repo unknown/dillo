@@ -10,17 +10,14 @@ export const astField = StateField.define({
   create() {
     return [] as ASTNodeWithProbs[];
   },
-  update: function (value, tr) {
-    const newValue: ASTNodeWithProbs[] = value;
-
-    // TODO: this keeps appending values
+  update: function (oldProbs, tr) {
+    const newProbs: ASTNodeWithProbs[] = [];
     for (const effect of tr.effects) {
       if (effect.is(updateASTEffect)) {
-        newValue.push(...effect.value);
+        newProbs.push(...effect.value);
       }
     }
-
-    return newValue;
+    return tr.docChanged || newProbs.length > 0 ? newProbs : oldProbs;
   },
   provide: (f) => astFacet.from(f),
 });

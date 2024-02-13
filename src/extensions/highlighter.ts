@@ -23,18 +23,21 @@ export const highlightField = StateField.define({
   create() {
     return Decoration.none;
   },
-  update: function (highlights, tr) {
-    highlights = highlights.map(tr.changes);
+  update: function (oldHighlights, tr) {
+    oldHighlights = oldHighlights.map(tr.changes);
+    let newHighlights = Decoration.none;
     for (const effect of tr.effects) {
       if (effect.is(highlightEffect)) {
         const { from, to, style } = effect.value;
         const mark = highlightMark(style);
-        highlights = highlights.update({
+        newHighlights = newHighlights.update({
           add: [mark.range(from, to)],
         });
       }
     }
-    return highlights;
+    return tr.docChanged || newHighlights.size > 0
+      ? newHighlights
+      : oldHighlights;
   },
   provide: (f) => EditorView.decorations.from(f),
 });

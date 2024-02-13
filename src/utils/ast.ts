@@ -43,7 +43,7 @@ export function getASTNodeProbs(
   let tokenIndex = 0;
   let from = 0;
   return nodes.map((node) => {
-    const possible: [string, number][] = [];
+    const probs: Record<string, number> = {};
     const origFrom = from;
     let accProb = 0;
 
@@ -54,22 +54,16 @@ export function getASTNodeProbs(
       if (nodeString.startsWith(logprob.token)) {
         // ASTNode contains token (e.g. ASTNode: "function", token: "func")
         const prefix = code.substring(origFrom, from);
-        possible.push(
-          ...Object.entries(logprob.probs).map(
-            ([token, prob]) =>
-              [prefix + token, accProb + prob] satisfies [string, number]
-          )
-        );
+        Object.entries(logprob.probs).forEach(([token, prob]) => {
+          probs[prefix + token] = accProb + prob;
+        });
         from = logprob.to;
         accProb += logprob.probs[logprob.token];
       } else if (logprob.token.startsWith(nodeString)) {
-        // token contains ASTNode (e.g. token: "({", token: "(")
-        possible.push(
-          ...Object.entries(logprob.probs).map(
-            ([token, prob]) =>
-              [token, accProb + prob] satisfies [string, number]
-          )
-        );
+        // token contains ASTNode (e.g. token: "({", ASTNode: "(")
+        Object.entries(logprob.probs).forEach(([token, prob]) => {
+          probs[token] = accProb + prob;
+        });
         break;
       } else {
         console.error(`Code mismatch: "${nodeString}" and "${logprob.token}"`);
@@ -78,6 +72,9 @@ export function getASTNodeProbs(
       ++tokenIndex;
     }
 
+    const possible = Object.entries(probs).filter(
+      ([token]) => token.trim().replace(/(\r\n|\n|\r)/gm, "").length > 0
+    );
     possible.sort(([, probA], [, probB]) => probB - probA);
 
     return {

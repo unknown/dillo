@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 
 import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
+import type { LanguageSupport } from "@codemirror/language";
 import CodeMirror, { Compartment } from "@uiw/react-codemirror";
 import type { ReactCodeMirrorRef, StateEffect } from "@uiw/react-codemirror";
 
@@ -21,7 +23,9 @@ const initialCode = `function add(num1: number, num2: number) {
 
 const languages: Language[] = [
   { id: "none", name: "None" },
-  { id: "typescript", name: "Typescript" },
+  { id: "python", name: "Python" },
+  { id: "javascript", name: "JavaScript" },
+  { id: "typescript", name: "TypeScript" },
 ];
 
 function App() {
@@ -41,22 +45,29 @@ function App() {
               return;
             }
 
-            let languageEffect: StateEffect<unknown>;
-
+            let languageSupport: LanguageSupport | [];
             switch (language.id) {
+              case "python": {
+                languageSupport = python();
+                break;
+              }
+              case "javascript": {
+                languageSupport = javascript();
+                break;
+              }
               case "typescript": {
-                languageEffect = languageConf.reconfigure(
-                  javascript({ typescript: true })
-                );
+                languageSupport = javascript({ typescript: true });
                 break;
               }
               default: {
-                languageEffect = languageConf.reconfigure([]);
+                languageSupport = [];
                 break;
               }
             }
 
-            refs.current.view.dispatch({ effects: [languageEffect] });
+            refs.current.view.dispatch({
+              effects: [languageConf.reconfigure(languageSupport)],
+            });
           }}
         />
         <button

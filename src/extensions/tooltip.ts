@@ -1,4 +1,4 @@
-import { hoverTooltip } from "@uiw/react-codemirror";
+import { EditorView, hoverTooltip } from "@uiw/react-codemirror";
 
 import { astField } from "./ast";
 import type { ASTNodeWithProbs } from "../utils/ast";
@@ -21,15 +21,19 @@ function getNode(nodes: ASTNodeWithProbs[], pos: number) {
   return null;
 }
 
-export const wordHover = hoverTooltip((view, pos, side) => {
+const tooltipBaseTheme = EditorView.baseTheme({
+  ".cm-tooltip-section.cm-tooltip-cursor": {
+    border: "none",
+    padding: "4px 6px",
+    borderRadius: "4px",
+  },
+});
+
+const wordHover = hoverTooltip((view, pos) => {
   const nodes = view.state.field(astField);
   const node = getNode(nodes, pos);
 
-  if (
-    !node ||
-    (node.node.from == pos && side < 0) ||
-    (node.node.to == pos && side > 0)
-  ) {
+  if (!node) {
     return null;
   }
 
@@ -39,6 +43,7 @@ export const wordHover = hoverTooltip((view, pos, side) => {
     above: true,
     create() {
       const possible = node.possible
+        .slice(0, 10)
         .map(([token, prob]) => {
           const probStr = `${(Math.exp(prob) * 100).toFixed(2)}%`;
           return `<li><code>${token}</code>: ${probStr}</li>`;
@@ -46,8 +51,13 @@ export const wordHover = hoverTooltip((view, pos, side) => {
         .join("\n");
 
       const dom = document.createElement("div");
-      dom.innerHTML = `<ul>${possible}</ul>`;
+      dom.className = "cm-tooltip-cursor";
+      dom.innerHTML = `<p>${node.node.name}</p><ul>${possible}</ul>`;
       return { dom };
     },
   };
 });
+
+export function dilloTooltip() {
+  return [tooltipBaseTheme, wordHover];
+}

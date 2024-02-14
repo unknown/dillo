@@ -6,11 +6,11 @@ const astFacet = Facet.define<ASTNodeWithProbs[]>();
 
 export const updateASTEffect = StateEffect.define<ASTNodeWithProbs[]>();
 
-export const astField = StateField.define({
+export const astField = StateField.define<ASTNodeWithProbs[]>({
   create() {
-    return [] as ASTNodeWithProbs[];
+    return [];
   },
-  update: function (oldProbs, tr) {
+  update(oldProbs, tr) {
     const newProbs: ASTNodeWithProbs[] = [];
     for (const effect of tr.effects) {
       if (effect.is(updateASTEffect)) {
@@ -19,5 +19,7 @@ export const astField = StateField.define({
     }
     return tr.docChanged || newProbs.length > 0 ? newProbs : oldProbs;
   },
-  provide: (f) => astFacet.from(f),
+  provide(f) {
+    return astFacet.from(f);
+  },
 });

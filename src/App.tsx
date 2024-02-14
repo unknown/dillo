@@ -28,6 +28,23 @@ const languages: Language[] = [
   { id: "typescript", name: "TypeScript" },
 ];
 
+function getLanguageSupport(language: Language): LanguageSupport | [] {
+  switch (language.id) {
+    case "python": {
+      return python();
+    }
+    case "javascript": {
+      return javascript();
+    }
+    case "typescript": {
+      return javascript({ typescript: true });
+    }
+    default: {
+      return [];
+    }
+  }
+}
+
 function App() {
   const [code, setCode] = useState(initialCode);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,29 +61,8 @@ function App() {
             if (!refs.current.view) {
               return;
             }
-
-            let languageSupport: LanguageSupport | [];
-            switch (language.id) {
-              case "python": {
-                languageSupport = python();
-                break;
-              }
-              case "javascript": {
-                languageSupport = javascript();
-                break;
-              }
-              case "typescript": {
-                languageSupport = javascript({ typescript: true });
-                break;
-              }
-              default: {
-                languageSupport = [];
-                break;
-              }
-            }
-
             refs.current.view.dispatch({
-              effects: [languageConf.reconfigure(languageSupport)],
+              effects: [languageConf.reconfigure(getLanguageSupport(language))],
             });
           }}
         />
@@ -113,16 +109,15 @@ function App() {
                 continue;
               }
 
-              const selectedProb = Math.exp(prob);
-              const maxProb = Math.exp(possible[0][1]);
-              const hue = (selectedProb * 120).toString(10);
+              const maxProb = possible[0][1];
+              const hue = ((prob / maxProb) * 120).toString(10);
 
               effects.push(
                 highlightEffect.of({
                   from: node.from,
                   to: node.to,
                   style: `background-color: hsl(${hue} 100% 50% / ${
-                    maxProb - selectedProb
+                    maxProb - prob
                   })`,
                 })
               );

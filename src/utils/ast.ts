@@ -72,15 +72,17 @@ export function getASTNodeProbs(
       ++tokenIndex;
     }
 
-    const possible = Object.entries(probs).filter(
-      ([token]) => token.trim().replace(/(\r\n|\n|\r)/gm, "").length > 0
-    );
+    const possible: [string, number][] = Object.entries(probs)
+      .filter(
+        ([token]) => token.trim().replace(/(\r\n|\n|\r)/gm, "").length > 0
+      )
+      .map(([token, logprob]) => [token, Math.exp(logprob)]);
     possible.sort(([, probA], [, probB]) => probB - probA);
 
     return {
       node,
       possible,
-      prob: accProb,
+      prob: Math.exp(accProb),
     };
   });
 }

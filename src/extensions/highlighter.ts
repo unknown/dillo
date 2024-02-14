@@ -23,7 +23,7 @@ export const highlightField = StateField.define({
   create() {
     return Decoration.none;
   },
-  update: function (oldHighlights, tr) {
+  update(oldHighlights, tr) {
     oldHighlights = oldHighlights.map(tr.changes);
     let newHighlights = Decoration.none;
     for (const effect of tr.effects) {
@@ -39,5 +39,7 @@ export const highlightField = StateField.define({
       ? newHighlights
       : oldHighlights;
   },
-  provide: (f) => EditorView.decorations.from(f),
+  provide(f) {
+    return EditorView.decorations.from(f);
+  },
 });

@@ -45,7 +45,7 @@ const wordHover = hoverTooltip((view, pos) => {
       const possible = node.possible
         .slice(0, 10)
         .map(([token, prob]) => {
-          const probStr = `${(Math.exp(prob) * 100).toFixed(2)}%`;
+          const probStr = `${(prob * 100).toFixed(2)}%`;
           return `<li><code>${token}</code>: ${probStr}</li>`;
         })
         .join("\n");

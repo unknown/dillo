@@ -1,8 +1,8 @@
 import OpenAI from "openai";
 
 const client = new OpenAI({
-  baseURL: import.meta.env.VITE_OPENAI_BASE_URL,
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  baseURL: process.env.OPENAI_BASE_URL,
+  apiKey: process.env.OPENAI_API_KEY,
   dangerouslyAllowBrowser: true,
 });
 

@@ -1,4 +1,6 @@
-import { useRef, useState } from "react";
+"use client";
+
+import { useState, useRef } from "react";
 
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
@@ -6,14 +8,14 @@ import type { LanguageSupport } from "@codemirror/language";
 import CodeMirror, { Compartment } from "@uiw/react-codemirror";
 import type { ReactCodeMirrorRef, StateEffect } from "@uiw/react-codemirror";
 
-import { LanguageSelect } from "./components/language-select";
-import type { Language } from "./components/language-select";
-import { astField, updateASTEffect } from "./extensions/ast";
-import { highlightEffect, highlightField } from "./extensions/highlighter";
-import { dilloTooltip } from "./extensions/tooltip";
-import { getASTNodeProbs, getASTNodes } from "./utils/ast";
-import type { ASTNode } from "./utils/ast";
-import { getLogProbs } from "./utils/openai";
+import { LanguageSelect } from "@/components/language-select";
+import type { Language } from "@/components/language-select";
+import { updateASTEffect, astField } from "@/extensions/ast";
+import { highlightEffect, highlightField } from "@/extensions/highlighter";
+import { dilloTooltip } from "@/extensions/tooltip";
+import { getASTNodes, getASTNodeProbs } from "@/utils/ast";
+import type { ASTNode } from "@/utils/ast";
+import type { TokenWithLogProbs } from "@/utils/openai";
 
 const languageConf = new Compartment();
 
@@ -45,15 +47,21 @@ function getLanguageSupport(language: Language): LanguageSupport | [] {
   }
 }
 
-function App() {
+function getBaseUrl() {
+  if (typeof window !== "undefined") return window.location.origin;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return `http://localhost:${process.env.PORT ?? 3000}`;
+}
+
+export default function Home() {
   const [code, setCode] = useState(initialCode);
   const [isLoading, setIsLoading] = useState(false);
 
   const refs = useRef<ReactCodeMirrorRef>({});
 
   return (
-    <div className="w-full min-h-screen flex flex-col">
-      <div className="flex gap-2 items-center justify-between p-2 border-b flex-wrap">
+    <div className="flex min-h-screen w-full flex-col">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b p-2">
         <h2 className="font-bold">Dillo</h2>
         <LanguageSelect
           languages={languages}
@@ -67,7 +75,7 @@ function App() {
           }}
         />
         <button
-          className="bg-black text-white px-4 py-2 rounded-md text-sm"
+          className="rounded-md bg-black px-4 py-2 text-sm text-white"
           disabled={isLoading}
           onClick={async () => {
             if (!refs.current.view) {
@@ -75,10 +83,11 @@ function App() {
             }
 
             setIsLoading(true);
-            const logprobs = await getLogProbs(code).catch((err) => {
-              console.error(err);
-              return null;
-            });
+            const logprobsResponse = await fetch(
+              getBaseUrl() + "/api/completion/",
+              { method: "POST", body: JSON.stringify({ code }) },
+            );
+            const logprobs: TokenWithLogProbs[] = await logprobsResponse.json();
             setIsLoading(false);
 
             if (logprobs === null) {
@@ -119,7 +128,7 @@ function App() {
                   style: `background-color: hsl(${hue} 100% 50% / ${
                     maxProb - prob
                   })`,
-                })
+                }),
               );
             }
 
@@ -145,5 +154,3 @@ function App() {
     </div>
   );
 }
-
-export default App;

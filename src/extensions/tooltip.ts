@@ -1,7 +1,7 @@
 import { EditorView, hoverTooltip } from "@uiw/react-codemirror";
 
-import { astField } from "./ast";
 import type { ASTNodeWithProbs } from "../utils/ast";
+import { astField } from "./ast";
 
 // binary searches for the correct node
 function getNode(nodes: ASTNodeWithProbs[], pos: number) {

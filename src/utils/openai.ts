@@ -50,9 +50,7 @@ export async function getLogProbs(code: string): Promise<TokenWithLogProbs[]> {
   const firstTokenOffset = allOffsets[1]!;
   for (let i = 1; i < allOffsets.length; ++i) {
     const from = allOffsets[i]! - firstTokenOffset;
-    const to = allOffsets[i + 1]
-      ? allOffsets[i + 1] - firstTokenOffset
-      : code.length;
+    const to = allOffsets[i + 1] ? allOffsets[i + 1] - firstTokenOffset : code.length;
 
     const token = code.substring(from, to);
 

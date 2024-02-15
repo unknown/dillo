@@ -1,9 +1,4 @@
-import {
-  Decoration,
-  EditorView,
-  StateEffect,
-  StateField,
-} from "@uiw/react-codemirror";
+import { Decoration, EditorView, StateEffect, StateField } from "@uiw/react-codemirror";
 
 function highlightMark(style: string) {
   return Decoration.mark({
@@ -35,9 +30,7 @@ export const highlightField = StateField.define({
         });
       }
     }
-    return tr.docChanged || newHighlights.size > 0
-      ? newHighlights
-      : oldHighlights;
+    return tr.docChanged || newHighlights.size > 0 ? newHighlights : oldHighlights;
   },
   provide(f) {
     return EditorView.decorations.from(f);

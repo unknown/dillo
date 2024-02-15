@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
-
+import { useRef, useState } from "react";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import type { LanguageSupport } from "@codemirror/language";
@@ -10,10 +9,10 @@ import type { ReactCodeMirrorRef, StateEffect } from "@uiw/react-codemirror";
 
 import { LanguageSelect } from "@/components/language-select";
 import type { Language } from "@/components/language-select";
-import { updateASTEffect, astField } from "@/extensions/ast";
+import { astField, updateASTEffect } from "@/extensions/ast";
 import { highlightEffect, highlightField } from "@/extensions/highlighter";
 import { dilloTooltip } from "@/extensions/tooltip";
-import { getASTNodes, getASTNodeProbs } from "@/utils/ast";
+import { getASTNodeProbs, getASTNodes } from "@/utils/ast";
 import type { ASTNode } from "@/utils/ast";
 import type { TokenWithLogProbs } from "@/utils/openai";
 
@@ -83,10 +82,10 @@ export default function Home() {
             }
 
             setIsLoading(true);
-            const logprobsResponse = await fetch(
-              getBaseUrl() + "/api/completion/",
-              { method: "POST", body: JSON.stringify({ code }) },
-            );
+            const logprobsResponse = await fetch(getBaseUrl() + "/api/completion/", {
+              method: "POST",
+              body: JSON.stringify({ code }),
+            });
             const logprobs: TokenWithLogProbs[] = await logprobsResponse.json();
             setIsLoading(false);
 
@@ -99,8 +98,7 @@ export default function Home() {
             const languageExtension = languageConf.get(refs.current.view.state);
             const languageExtensionLoaded =
               languageExtension &&
-              (!Array.isArray(languageExtension) ||
-                languageExtension.length > 0);
+              (!Array.isArray(languageExtension) || languageExtension.length > 0);
 
             const nodes: ASTNode[] = languageExtensionLoaded
               ? getASTNodes(refs.current.view.state)
@@ -125,9 +123,7 @@ export default function Home() {
                 highlightEffect.of({
                   from: node.from,
                   to: node.to,
-                  style: `background-color: hsl(${hue} 100% 50% / ${
-                    maxProb - prob
-                  })`,
+                  style: `background-color: hsl(${hue} 100% 50% / ${maxProb - prob})`,
                 }),
               );
             }
@@ -141,12 +137,7 @@ export default function Home() {
       <CodeMirror
         ref={refs}
         value={code}
-        extensions={[
-          astField,
-          highlightField,
-          dilloTooltip(),
-          languageConf.of([]),
-        ]}
+        extensions={[astField, highlightField, dilloTooltip(), languageConf.of([])]}
         onChange={(value) => {
           setCode(value);
         }}

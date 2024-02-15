@@ -38,7 +38,7 @@ export type ASTNodeWithProbs = {
 export function getASTNodeProbs(
   code: string,
   nodes: ASTNode[],
-  logprobs: TokenWithLogProbs[]
+  logprobs: TokenWithLogProbs[],
 ): ASTNodeWithProbs[] {
   let tokenIndex = 0;
   let from = 0;
@@ -73,9 +73,7 @@ export function getASTNodeProbs(
     }
 
     const possible: [string, number][] = Object.entries(probs)
-      .filter(
-        ([token]) => token.trim().replace(/(\r\n|\n|\r)/gm, "").length > 0
-      )
+      .filter(([token]) => token.trim().replace(/(\r\n|\n|\r)/gm, "").length > 0)
       .map(([token, logprob]) => [token, Math.exp(logprob)]);
     possible.sort(([, probA], [, probB]) => probB - probA);
 

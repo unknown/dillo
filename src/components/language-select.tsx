@@ -16,9 +16,7 @@ export function LanguageSelect({
   initialLanguage,
   onLanguageChange,
 }: LanguageSelectProps) {
-  const [selectedLanguage, setSelectedLanguage] = useState(
-    initialLanguage ?? languages[0]
-  );
+  const [selectedLanguage, setSelectedLanguage] = useState(initialLanguage ?? languages[0]);
 
   return (
     <select
@@ -28,9 +26,7 @@ export function LanguageSelect({
           if (event.target.value === selectedLanguage.id) {
             return;
           }
-          const newLanguage = languages.find(
-            (language) => language.id === event.target.value
-          );
+          const newLanguage = languages.find((language) => language.id === event.target.value);
           if (!newLanguage) {
             return;
           }

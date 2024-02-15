@@ -1,36 +1,27 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Dillo
+
+**Dillo** is an exploration into using LLMs to detect bugs in code. Inspired by [AI Found a Bug in My Code](https://joel.tools/codegen/) by Joel Einbinder, Dillo uses the logprobs of each token in a given code snippet to highlight unlikely tokens in code.
+
+<div align="center">
+    <img src="./public/demo.png" alt="Screenshot of a buggy Typescript implementation of an add function" width="320" >
+</div>
 
 ## Getting Started
+While a demo can be found at [dillo.dmo.ooo](https://dillo.dmo.ooo), renting a GPU 24/7 is expensive, so the hosted demo won't always work. If you're interested in playing around with it, feel free reach out and ask me to turn it on, or host it yourself with the following steps.
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js
+- pnpm
+- Instance of [DeepSeek Coder](https://huggingface.co/deepseek-ai/deepseek-coder-7b-base-v1.5)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository
+1. Run `pnpm install` in the root directory
+1. Copy `.env.example` to create a `.env.local` file if it doesn't already exist
+1. Run `pnpm run dev`
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Hosting DeepSeek Coder
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+While I use [RunPod](runpod.io) to host DeekSeek, feel free to self-host or use your own favorite provider. If using RunPod, I've made [this template](https://www.runpod.io/console/explore/oc46pxvlrc) and found that it works well on RunPod's A4500s.

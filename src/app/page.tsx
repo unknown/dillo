@@ -86,8 +86,14 @@ export default function Home() {
               method: "POST",
               body: JSON.stringify({ code }),
             });
-            const logprobs: TokenWithLogProbs[] = await logprobsResponse.json();
             setIsLoading(false);
+
+            if (!logprobsResponse.ok) {
+              alert("Failed to get a response. Server may be down.");
+              return;
+            }
+
+            const logprobs: TokenWithLogProbs[] = await logprobsResponse.json();
 
             if (logprobs === null) {
               return;
